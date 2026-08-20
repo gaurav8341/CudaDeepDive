@@ -103,3 +103,23 @@ cudaFree(a);
 ## Error Handling in Cuda
 
 In cuda, the errors are handled using a type `cudaError_t`. These are very essential for any kind of memory operations.
+
+## Streaming Multiprocessors.
+
+Gpus have certain number of streaming multiprocessors depending on type of GPU. When the blocks of threads are scehduled to run on SM depening on the kernel configuration ie block size and number of blocks. One block will be on single SM. 
+
+All the threads in block will run in single SM. 
+
+SM Optimization can be done, by configuring the number of blocks to match the number of SM in GPU.
+
+SM is larger block of cuda cores, so all the threads in the block will run parallely, depending on how many cuda cores are there in singls SM
+This architecture is called SIMT(Single Instruction Multiple Threads) All cores in SM run same instruction but on different data. We can have same PC, stack pointer for all threads, in this architecture.(Till Volta generation this was the case after that each thread is managed independantly in nvidia.
+
+## Unified Memory
+
+Like in the CPU, in GPU as well the memory behaviour is same. We initialize and allocate the memory using `cudaMallocManaged`, but the data may not be present in the memory. 
+
+In above cases, the page fault may occur, which brings that data in to the memory. 
+
+To avoid the pag faults we can use `cudaMemPrefetchAsync`. This operation is async and requires the argument stating where the data should be transferred.
+

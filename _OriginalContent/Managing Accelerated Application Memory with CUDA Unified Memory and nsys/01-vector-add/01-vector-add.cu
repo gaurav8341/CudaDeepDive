@@ -74,11 +74,26 @@ int main()
    * is updated.
    */
 
-  threadsPerBlock = 1;
-  numberOfBlocks = 1;
+  threadsPerBlock = 256;
+  numberOfBlocks = (N + threadsPerBlock - 1) / threadsPerBlock;
 
   cudaError_t addVectorsErr;
   cudaError_t asyncErr;
+  
+  int deviceId;
+  int numberOfSMs;
+
+  cudaGetDevice(&deviceId);
+  cudaDeviceGetAttribute(&numberOfSMs, cudaDevAttrMultiProcessorCount, deviceId);
+
+  cudaMemLocation loc;
+  loc.type = cudaMemLocationTypeDevice;
+  loc.id   = deviceId;
+
+  cudaMemPrefetchAsync(a, size, loc, 0);           // prefetch to GPU
+  cudaMemPrefetchAsync(b, size, loc, 0);           // prefetch to GPU
+  cudaMemPrefetchAsync(c, size, loc, 0);           // prefetch to GPU
+  // cudaMemPrefetchAsync(b, size, loc, 0);        // etc.
 
   addVectorsInto<<<numberOfBlocks, threadsPerBlock>>>(c, a, b, N);
 
@@ -87,6 +102,13 @@ int main()
 
   asyncErr = cudaDeviceSynchronize();
   if(asyncErr != cudaSuccess) printf("Error: %s\n", cudaGetErrorString(asyncErr));
+
+  cudaMemLocation loc_cpu;
+  loc_cpu.type = cudaMemLocationTypeHost;
+  loc_cpu.id   = deviceId;
+
+  cudaMemPrefetchAsync(c, size, loc_cpu, 0);
+
 
   checkElementsAre(7, c, N);
 

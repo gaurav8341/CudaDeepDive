@@ -13,6 +13,16 @@ int main()
   int multiProcessorCount;
   int warpSize;
 
+  cudaGetDevice(&deviceId);
+  
+  cudaDeviceProp deviceProperties;
+  cudaGetDeviceProperties(&deviceProperties, deviceId);
+
+  computeCapabilityMajor = deviceProperties.major;
+  computeCapabilityMinor = deviceProperties.minor;
+  multiProcessorCount = deviceProperties.multiProcessorCount;
+  warpSize = deviceProperties.warpSize;
+
   /*
    * There should be no need to modify the output string below.
    */
